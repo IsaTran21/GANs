@@ -150,14 +150,3 @@ def get_argparge_type(parser):
     else:
         config_args = parser.parse_args() # This is for the scripts py
     return config_args
-if __name__ == "__main__":
-    # from dataset import Custom_dataset
-    # test_dataset = Custom_dataset("./data/trainA", "./data/trainB", use_transformA=True, use_transformB=True)
-    # visualize_imgs(test_dataset[200][0], test_dataset[200][1],test_dataset[200][0], test_dataset[200][1], resize=(256, 256))
-    env = get_environment()
-    if env == 'Colab':
-        print("Running in Google Colab! test")
-    elif env == 'Jupyter':
-        print("Running in a Jupyter Notebook!")
-    else:
-        print("Running as a normal Python script.")

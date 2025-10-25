@@ -139,20 +139,3 @@ class Generator(nn.Module):
   def forward(self, x):
     return self.model(x)
 
-
-
-
-
-if __name__ == "__main__":
-    # Test the ResNetBlock
-    x_test = torch.randn((10, 256, 128, 128))  # Number of samples, num channels, height, width
-    res_net_block_test = ResNetBlock_Unit(256, 256)
-    x_out = res_net_block_test(x_test)
-    print(f'RESNET test {x_out.shape}')
-
-    x_test = torch.randn((1, 3, 128, 128))
-    gen_test_large = Generator(in_channels=3, type_gen="large")
-
-    out_test_large = gen_test_large(x_test)
-    print(out_test_large.shape)
-    print(f' The min and max: {out_test_large.min()}, {out_test_large.max()}')

@@ -103,32 +103,3 @@ def total_gen_loss(G, F, Dg, Df, imgA, imgB, lambda_cyc=10.0, lambda_idt=5.0):
   cycle_loss_val = cycle_loss(G, F, Dg, Df, imgA, imgB)
   identity_loss_val = identity_loss(G, F, imgA, imgB)
   return gan_loss_val + lambda_cyc * cycle_loss_val + lambda_idt * identity_loss_val
-
-
-
-
-if __name__ == "__main__":
-    # Test the total_disc_loss: Dg, Df, imgA, imgB, fakeA, fakeB
-    from discriminator import Discriminator
-    from gen import Generator
-    # Dg_test = Discriminator(3, 64)
-    # Df_test = Discriminator(3, 64)
-    # imgA_test = torch.randn((5, 3, 64, 64))
-    # imgB_test = torch.randn((5, 3, 64, 64))
-    # G_test = Generator(3)
-    # F_test = Generator(3)
-    # fakeA_test = F_test(imgB_test)
-    # fakeB_test = G_test(imgA_test)
-    # total_disc_loss_test = total_disc_loss(Dg_test, Df_test, imgA_test, imgB_test, fakeA_test, fakeB_test)
-    # print(total_disc_loss_test)
-    # Test total_gen_loss
-    imgA_test = torch.randn((5, 3, 64, 64))
-    imgB_test = torch.randn((5, 3, 64, 64))
-
-    G_test = Generator(3)
-    F_test = Generator(3)
-    Dg_test = Discriminator(3, 64)
-    Df_test = Discriminator(3, 64)
-
-    total_gen_loss_test = total_gen_loss(G_test, F_test, Dg_test, Df_test, imgA_test, imgB_test)
-    print(f'This is the total loss test: {total_gen_loss_test}')

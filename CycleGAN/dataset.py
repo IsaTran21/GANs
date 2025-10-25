@@ -89,10 +89,3 @@ def get_dataloader(realA_path, realB_path, batch_size, use_transformA=True, use_
 
 
 # Mapping from A -> B (photos to sketches)
-if __name__ == "__main__":
-    # test_dataset = Custom_dataset("./data/trainA", "./data/trainB", use_transformA=True, use_transformB=True)
-    # print(len(test_dataset))
-    # Create dataloader
-    train_loader = get_dataloader("./data/trainA", "./data/trainB", 2, use_transformA=True, use_transformB=True)
-    print(len(train_loader))
-

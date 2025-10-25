@@ -47,9 +47,3 @@ class Discriminator(nn.Module):
     out = self.conv5(out)
 
     return out
-
-if __name__ == "__main__":
-  test_disc = Discriminator(3, 64)
-  imgA_test = torch.rand((1, 3, 256, 256))
-  imgB_test = torch.rand((1, 3, 256, 256))
-  print(test_disc(imgA_test).shape)
