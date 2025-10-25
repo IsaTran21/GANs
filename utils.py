@@ -1,6 +1,12 @@
 import matplotlib.pyplot as plt
 from torchvision import transforms
 import random
+from pathlib import Path
+import torch
+from datetime import datetime, timedelta, timezone # To save the model
+
+import sys
+
 # Visualization the dataset
 
 def visualize_imgs(imgA, imgB, genA=None, genB=None, resize=None, figsize=(15,20)):
@@ -66,7 +72,92 @@ def select_img(pool_imgs, imA, imB, max_len=50):
         oldA, oldB = pool_imgs[idx]
         pool_imgs[idx] = (imA, imB)
         return oldA, oldB
+
+def save_model(model, save_path, model_name, epoch=None, optimizer=None, loss=None, log=None):
+    # Define GMT+7 timezone
+    gmt7 = timezone(timedelta(hours=7))
+    now_gmt7 = datetime.now(gmt7)
+    y = now_gmt7.year
+    m = now_gmt7.month
+    d = now_gmt7.day
+    h = now_gmt7.hour
+    mi = now_gmt7.minute
+    s = now_gmt7.second
+
+    checkpoint = {
+            'model_state_dict': model.state_dict(),
+        }
+    extra = {}
+    if epoch:
+        checkpoint["epoch"] = epoch
+        extra["epoch"] = epoch
+    if loss:
+        checkpoint["loss"] = loss
+        extra["loss"] = loss
+    if optimizer:
+        checkpoint["optimizer"] = optimizer.state_dict()
+        extra["optimizer"] = "save with optimizer"
+    save_path = Path(save_path) / f'{model_name}_{y}_{m}_{d}_{h}_{mi}_{s}_at_epoch_{epoch}.pth'
+    extra["save_path"] = str(save_path)
+    torch.save(checkpoint, save_path)
+    if log: #use info level
+        log.info(f'save_model', extra=extra)
+    return f"Save model at {save_path}"
+def create_folder(create_folder):
+    folder = Path.cwd() / create_folder
+    folder.mkdir(parents=True, exist_ok=True)
+    return folder
+
+
+
+
+def get_environment():
+    """
+    Detects the runtime environment.
+
+    Returns:
+        str: 'Colab', 'Jupyter', or 'Script'
+    """
+
+    # Check for Google Colab
+    if 'google.colab' in sys.modules:
+        return 'Colab'
+
+    # Check for general Jupyter environment
+    try:
+        shell = get_ipython().__class__.__name__
+        if shell == 'ZMQInteractiveShell':
+            return 'Jupyter'  # Jupyter notebook, JupyterLab, QtConsole
+        elif shell == 'TerminalInteractiveShell':
+            return 'Script'  # Standard IPython terminal
+        else:
+            return 'Script'  # Other (e.g., IDLE)
+    except NameError:
+        return 'Script'  # Not in an IPython environment
+
+def get_tqdm():
+    env = get_environment()
+    if env == 'Jupyter' or env == 'Colab':
+        from tqdm.notebook import tqdm
+    else:
+        from tqdm import tqdm
+    return tqdm
+
+def get_argparge_type(parser):
+    env = get_environment()
+    if env == 'Jupyter' or env == 'Colab':
+        config_args, _ = parser.parse_known_args()
+    else:
+        config_args = parser.parse_args() # This is for the scripts py
+    return config_args
 if __name__ == "__main__":
-    from dataset import Custom_dataset
-    test_dataset = Custom_dataset("./data/trainA", "./data/trainB", use_transformA=True, use_transformB=True)
-    visualize_imgs(test_dataset[200][0], test_dataset[200][1],test_dataset[200][0], test_dataset[200][1], resize=(256, 256))
+    # from dataset import Custom_dataset
+    # test_dataset = Custom_dataset("./data/trainA", "./data/trainB", use_transformA=True, use_transformB=True)
+    # visualize_imgs(test_dataset[200][0], test_dataset[200][1],test_dataset[200][0], test_dataset[200][1], resize=(256, 256))
+    env = get_environment()
+    if env == 'Colab':
+        print("Running in Google Colab! test")
+    elif env == 'Jupyter':
+        print("Running in a Jupyter Notebook!")
+    else:
+        print("Running as a normal Python script.")

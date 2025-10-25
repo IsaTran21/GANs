@@ -39,9 +39,10 @@ TRAINING_PARAMS:
   BATCH_SIZE: 1
   LR_GEN: !!float 2e-4
   LR_DISC: !!float 2e-4
-  CHECKPOINT_FOLDER: ""
+  CHECKPOINT_FOLDER: "checkpoint"
   LAMBDA_VAL:
     GAN: 1
     CYCLE: 10
     IDEN: 0.5
+  SAVE_AFTER: 10
 
