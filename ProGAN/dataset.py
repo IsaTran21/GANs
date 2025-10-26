@@ -36,8 +36,9 @@ def getImgList(path):
 
 
 class Dataset_transformed:
-    def __init__(self, im_path, batch_sizes, max_size_i=6, crop_size = 160):
+    def __init__(self, im_path, batch_sizes, max_size_i=6, crop_size = None):
         """
+        im_path: e.g. "data/", if the images in sub folder like data/1/a.jpg, data/2/b.jpg, we can pass: "data/**/"
         max_size_i: we want to get the image size to be 4, 8, 16,...
         The power of 2, therefore, if we want the target image of size 16, thn max_size_i = 4
         """
@@ -46,16 +47,26 @@ class Dataset_transformed:
         self.im_path = im_path
         self.crop_size = crop_size
         self.batch_sizes = batch_sizes
+        self.crop_size = crop_size
         self.all_data = self._data()
 
 
     def get_transform(self, size):
-        transform = transforms.Compose([
-            transforms.CenterCrop(self.crop_size),
-            transforms.Resize((size, size)),
-            transforms.ToTensor(),
-            transforms.Normalize((0.5,0.5, 0.5), (0.5,0.5, 0.5))  # Scales to [-1, 1]
-        ])
+
+        if self.crop_size:
+
+            transform = transforms.Compose([
+                transforms.CenterCrop(self.crop_size),
+                transforms.Resize((size, size)),
+                transforms.ToTensor(),
+                transforms.Normalize((0.5,0.5, 0.5), (0.5,0.5, 0.5))  # Scales to [-1, 1]
+            ])
+        else:
+            transform = transforms.Compose([
+                transforms.Resize((size, size)),
+                transforms.ToTensor(),
+                transforms.Normalize((0.5,0.5, 0.5), (0.5,0.5, 0.5))  # Scales to [-1, 1]
+            ])
         data = CelebDataset(self.im_path, transform=transform)
         return data
 
@@ -67,7 +78,7 @@ class Dataset_transformed:
         :return:
         """
         start = time.time()
-        all_sizes = [2**i for i in range(2, self.max_size_i)]
+        all_sizes = [2**i for i in range(2, self.max_size_i+1)]
         NUM_WORKERS = max(1, os.cpu_count() // 2)
         with ProcessPoolExecutor(max_workers=NUM_WORKERS) as executor:
             results = executor.map(self.get_transform, all_sizes)
@@ -85,8 +96,18 @@ class Dataset_transformed:
                                         num_workers=NUM_WORKERS,
                                         drop_last=True
                                         )\
-            for i in range(self.max_size_i-2)} # because we get the index, moreover, the Py starts at 0
+            for i in range(self.max_size_i-1)} # because we get the index, moreover, the Py starts at 0
         return all_loaders
 
 if __name__ == "__main__":
-    pass
+    from utils import visualize_imgs_test
+    batch_sizes = {4: 8, 8: 8, 16: 8, 32: 8, 64: 8, 128: 8}
+    ds = Dataset_transformed("data/**/", batch_sizes, 7)
+    print(ds.all_data)
+
+    img = ds.all_data[128]
+    images = next(iter(img))
+    image_a = images[0]
+    image_b = images[1]
+    visualize_imgs_test(image_a, image_b)
+

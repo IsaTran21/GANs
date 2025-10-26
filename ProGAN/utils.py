@@ -219,3 +219,38 @@ def get_alpha(epoch_val, batch_val, total_epoch, total_batch):
         return current_batch / total_batch_half
     else:
         return 1
+def save_model(model, save_path, model_name, epoch=None, optimizer=None, loss=None, log=None):
+    # Define GMT+7 timezone
+    gmt7 = timezone(timedelta(hours=7))
+    now_gmt7 = datetime.now(gmt7)
+    y = now_gmt7.year
+    m = now_gmt7.month
+    d = now_gmt7.day
+    h = now_gmt7.hour
+    mi = now_gmt7.minute
+    s = now_gmt7.second
+
+    checkpoint = {
+            'model_state_dict': model.state_dict(),
+        }
+    extra = {}
+    if epoch:
+        checkpoint["epoch"] = epoch
+        extra["epoch"] = epoch
+    if loss:
+        checkpoint["loss"] = loss
+        extra["loss"] = loss
+    if optimizer:
+        checkpoint["optimizer"] = optimizer.state_dict()
+        extra["optimizer"] = "save with optimizer"
+    save_path = Path(save_path) / f'{model_name}_{y}_{m}_{d}_{h}_{mi}_{s}_at_epoch_{epoch}.pth'
+    extra["save_path"] = str(save_path)
+    torch.save(checkpoint, save_path)
+    if log: #use info level
+        log.info(f'save_model', extra=extra)
+    return f"Save model at {save_path}"
+
+def create_folder(create_folder):
+    folder = Path.cwd() / create_folder
+    folder.mkdir(parents=True, exist_ok=True)
+    return folder
