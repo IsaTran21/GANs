@@ -67,7 +67,7 @@ class Dataset_transformed:
         :return:
         """
         start = time.time()
-        all_sizes = list(range(2, self.max_size_i))
+        all_sizes = [2**i for i in range(2, self.max_size_i)]
         NUM_WORKERS = max(1, os.cpu_count() // 2)
         with ProcessPoolExecutor(max_workers=NUM_WORKERS) as executor:
             results = executor.map(self.get_transform, all_sizes)
@@ -77,9 +77,9 @@ class Dataset_transformed:
         # Then the self.batch_sizes is a dict of {4: its batch size, 5: its batch size,...}
         # range(self.max_size_i-2) is something like: 0, 1, 2,....the indices of each size
         all_loaders = {
-            2**all_sizes[i]: DataLoader(
+            all_sizes[i]: DataLoader(
                                         all_data[i],
-                                        batch_size=self.batch_sizes[2**all_sizes[i]],
+                                        batch_size=self.batch_sizes[all_sizes[i]],
                                         shuffle=True,
                                         pin_memory=True,
                                         num_workers=NUM_WORKERS,
