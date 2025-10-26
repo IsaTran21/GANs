@@ -1,0 +1,6 @@
+TRAINING_PARAMS:
+  EPOCHS: 32
+  BATCH_SIZE: 1
+  LR_GEN: !!float 2e-4
+  LR_DISC: !!float 2e-4
+  CHECKPOINT_FOLDER: "checkpoint"
