@@ -201,3 +201,21 @@ def get_argparge_type(parser):
     else:
         config_args = parser.parse_args() # This is for the scripts py
     return config_args
+def get_alpha(epoch_val, batch_val, total_epoch, total_batch):
+    """
+    Return the current alpha.
+    epoch_val: start with 0 => first epoch we will have the current_batch = batch_val + 0
+    batch_val: the current batch value in total batch
+    total_epoch: total epochs for that resolution training.
+    total_batch: number of batch for that epoch.
+    first_half: alpha goes from 0 -> 1
+    the other half: alpha=1
+    """
+    first_half = total_epoch // 2
+
+    if epoch_val < first_half:
+        current_batch = batch_val + epoch_val * total_batch
+        total_batch_half = total_batch * first_half
+        return current_batch / total_batch_half
+    else:
+        return 1
