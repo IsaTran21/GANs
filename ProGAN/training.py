@@ -12,7 +12,7 @@ from utils import save_model
 import logging.config
 from custom_logger import LOGGER_CONFIG
 
-def train_step(batch_sizes, epoch_list, lr_gen, lr_disc, im_path, max_size_i, crop_size, save_path, save_after):
+def train_step(batch_sizes, epoch_dict, lr_gen, lr_disc, im_path, max_size_i, crop_size, save_path, save_after):
     """
     :param batch_sizes: a dict of batch size for each resolution, example: {4: 128, 8: 128, 16: 64, 32: 16, 64: 16}
     :param epoch_list: the list of epoch for training at each resolution. e.g., [8, 8, 6, 4, 4, 4, 4, 4]
@@ -29,7 +29,7 @@ def train_step(batch_sizes, epoch_list, lr_gen, lr_disc, im_path, max_size_i, cr
     """
     # batch_sizes = {4: 128, 8: 128, 16: 64, 32: 16, 64: 16}
     IDX_LIST_TOTAL = [0, 1, 2, 3, 4, 5, 6, 7]
-    idx = max_size_i - 2
+    idx = max_size_i - 1
     IDX_LIST = IDX_LIST_TOTAL[:idx]
 
     BATCH_ALL_KEY = sorted(list(batch_sizes.keys()))[:idx] #First, we get the keys as a list
@@ -37,11 +37,7 @@ def train_step(batch_sizes, epoch_list, lr_gen, lr_disc, im_path, max_size_i, cr
     # Then, get its value in order
     BATCH_ALL = [batch_sizes[key] for key in BATCH_ALL_KEY]
     ds_test = Dataset_transformed(im_path, batch_sizes, max_size_i, crop_size)
-
-
-
-    TRAIN_DL_ALL = [ds_test.all_data[i] for i in BATCH_ALL_KEY]
-
+    TRAIN_DL_ALL = {i: ds_test.all_data[i] for i in BATCH_ALL_KEY}
     # lambda_val = 10
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -55,9 +51,8 @@ def train_step(batch_sizes, epoch_list, lr_gen, lr_disc, im_path, max_size_i, cr
     gen_optim = torch.optim.Adam(gen.parameters(), betas=(0.0,0.999), lr=lr_gen, fused=use_fused)
     disc_optim = torch.optim.Adam(disc.parameters(), betas=(0.0,0.999), lr=lr_disc, fused=use_fused)
 
-
     RESOLUTIONS = {0: 4, 1: 8, 2: 16, 3: 32, 4: 64, 5:128, 6: 256, 7:512}
-    EPOCH_LIST = epoch_list#[8, 8, 6, 4, 4, 4, 4, 4]
+    EPOCH_DICT = epoch_dict#[8, 8, 6, 4, 4, 4, 4, 4]
 
     gen.train()
     disc.train()
@@ -70,18 +65,18 @@ def train_step(batch_sizes, epoch_list, lr_gen, lr_disc, im_path, max_size_i, cr
     save_logger = logging.getLogger("save_logger")
     save_model_root = create_folder(save_path)
 
-    for i in IDX_LIST:  # Train at each resolution
+    for i in tqdm(IDX_LIST, desc="At resolution training", position=0, colour="green"):  # Train at each resolution
         IDX = IDX_LIST[i]
-        TOTAL_EPOCH = EPOCH_LIST[i]
-        TRAIN_DL = TRAIN_DL_ALL[i]
+        TOTAL_EPOCH = EPOCH_DICT[RESOLUTIONS[i]]
+        TRAIN_DL = TRAIN_DL_ALL[RESOLUTIONS[i]]
         TOTAL_BATCH = len(TRAIN_DL)
         CURRENT_BATCH_SIZE = BATCH_ALL[i]
 
-        for epoch in tqdm(range(TOTAL_EPOCH), desc="Epoch training", position=0, colour="green"):
+        for epoch in tqdm(range(TOTAL_EPOCH), desc="Epoch training", position=1, colour="blue"):
             gen_loss_val_total = 0
             disc_loss_val_total = 0
 
-            for batch_val, x_true in enumerate(tqdm(TRAIN_DL, desc="Batch training", leave=True, position=1)):
+            for batch_val, x_true in enumerate(tqdm(TRAIN_DL, desc="Batch training", leave=True, position=2, colour="yellow")):
                 current_step += 1
 
                 x_true = x_true.to(device)
@@ -114,7 +109,7 @@ def train_step(batch_sizes, epoch_list, lr_gen, lr_disc, im_path, max_size_i, cr
                 # Visualization
                 if batch_val % 20 == 0:
                     print(
-                        f'Epoch = {epoch + 1}/{TOTAL_EPOCH}, batch = {batch_val}/{len(TRAIN_DL)} - at resolution: {RESOLUTIONS[IDX]}, disc loss = {loss_disc_val.item():.4f}, gen loss = {gen_loss_val.item():.4f}')
+                        f'Resolution = {RESOLUTIONS[i]}, Epoch = {epoch + 1}/{TOTAL_EPOCH}, batch = {batch_val}/{len(TRAIN_DL)} - at resolution: {RESOLUTIONS[IDX]}, disc loss = {loss_disc_val.item():.4f}, gen loss = {gen_loss_val.item():.4f}')
 
                 if batch_val % 100 == 0:
                     gen.eval()

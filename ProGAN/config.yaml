@@ -7,6 +7,6 @@ TRAINING_PARAMS:
   MAX_SIZE_I: 6
   CROP_SIZE: 160
   SAVE_AFTER: 1
-  EPOCH_LIST: [8, 8, 6, 4, 4, 4, 4, 4]
+  EPOCH_DICT: {4: 8, 8: 8, 16: 6, 32: 4, 64: 4, 128: 4, 256: 4, 512: 4}
 
 
