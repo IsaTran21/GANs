@@ -10,19 +10,29 @@ from config import (
     EPOCH_LIST)
 from utils import get_argparge_type
 from training import train_step
-import argparse
 
+import argparse, ast
+
+
+
+def int_or_none(value):
+    if value.lower() == "none":
+        return None
+    return int(value)
 if __name__ == "__main__":
+
+
+
     parser = argparse.ArgumentParser(description="Training ProGAN")
-    parser.add_argument("-bs", "--batch_sizes", type=dict, help="The custom batch sizes. "
+    parser.add_argument("-bs", "--batch_sizes", type=ast.literal_eval, help="The custom batch sizes. "
                                                                 "e.g. {4: 128, 8: 128, 16: 64, 32: 16, 64: 16, 128: 16, 256: 16, 512: 16}", default=BATCH_SIZES)
-    parser.add_argument("-epl", "--epoch_list", type=list, help="The list, e.g. [8, 8, 6, 4, 4, 4, 4, 4], each elment corresponds to the number of epochs for training at that resolution"
+    parser.add_argument("-epl", "--epoch_list", type=ast.literal_eval, help="The list, e.g. [8, 8, 6, 4, 4, 4, 4, 4], each elment corresponds to the number of epochs for training at that resolution"
                                                                 "we can count starts to count it from 4, 8, 16, 32, 64, 128, 256, 512", default=EPOCH_LIST)
     parser.add_argument("-ip", "--im_path", type=str, help="the path contains the training dataset, example: data/train/, remember to at the last slash", default=IM_PATH)
     parser.add_argument("-msi", "--max_size_i", type=int, help="the i power to get the resolution that we want, e.g., if we want to "
                                                                "generate the resolution 64, then the max_size_i = 6, because 2**6=64", default=MAX_SIZE_I)
-    parser.add_argument("-cs", "--crop_size", type=int, help="The image’s height and width kept after removing outer regions.", default=CROP_SIZE)
-    parser.add_argument("-sp", "--save_path", type=int, help="the paths for saving the models after training each save_after epochs", default=CHECKPOINT_FOLDER)
+    parser.add_argument("-cs", "--crop_size", type=int_or_none, help="The image height and width kept after removing outer regions.", default=CROP_SIZE)
+    parser.add_argument("-sp", "--save_path", type=str, help="the paths for saving the models after training each save_after epochs", default=CHECKPOINT_FOLDER)
     parser.add_argument("-sa", "--save_after", type=int, help="The number of epoch to save the models.", default=SAVE_AFTER)
     parser.add_argument("-lg", "--lr_gen", type=float, help="Learning rate for the generator", default=LR_GEN)
     parser.add_argument("-ld", "--lr_disc", type=float, help="Learning rate for the discriminator/critic", default=LR_DISC)
@@ -40,12 +50,12 @@ if __name__ == "__main__":
     lr_gen = config_args.lr_gen
     lr_disc = config_args.lr_disc
 
-    train_step(batch_sizes,
-               epoch_list,
-               lr_gen,
-               lr_disc,
-               im_path,
-               max_size_i,
-               crop_size,
-               save_path,
-               save_after)
+    train_step(batch_sizes=batch_sizes,
+               epoch_list=epoch_list,
+               lr_gen=lr_gen,
+               lr_disc=lr_disc,
+               im_path=im_path,
+               max_size_i=max_size_i,
+               crop_size=crop_size,
+               save_path=save_path,
+               save_after=save_after)

@@ -99,15 +99,15 @@ class Dataset_transformed:
             for i in range(self.max_size_i-1)} # because we get the index, moreover, the Py starts at 0
         return all_loaders
 
-if __name__ == "__main__":
-    from utils import visualize_imgs_test
-    batch_sizes = {4: 8, 8: 8, 16: 8, 32: 8, 64: 8, 128: 8}
-    ds = Dataset_transformed("data/**/", batch_sizes, 7)
-    print(ds.all_data)
-
-    img = ds.all_data[128]
-    images = next(iter(img))
-    image_a = images[0]
-    image_b = images[1]
-    visualize_imgs_test(image_a, image_b)
+# if __name__ == "__main__":
+#     from utils import visualize_imgs_test
+#     batch_sizes = {4: 8, 8: 8, 16: 8, 32: 8, 64: 8, 128: 8}
+#     ds = Dataset_transformed("data/**/", batch_sizes, 7)
+#     print(ds.all_data)
+#
+#     img = ds.all_data[128]
+#     images = next(iter(img))
+#     image_a = images[0]
+#     image_b = images[1]
+#     visualize_imgs_test(image_a, image_b)
 

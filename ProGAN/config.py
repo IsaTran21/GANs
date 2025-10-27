@@ -2,7 +2,7 @@ import yaml
 
 with open('config.yaml', 'r') as f:
     data = yaml.full_load(f)
-EPOCHS = data["TRAINING_PARAMS"]["EPOCHS"]
+
 BATCH_SIZES = data["TRAINING_PARAMS"]["BATCH_SIZES"]
 LR_GEN = data["TRAINING_PARAMS"]["LR_GEN"]
 LR_DISC = data["TRAINING_PARAMS"]["LR_DISC"]

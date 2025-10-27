@@ -28,10 +28,20 @@ def train_step(batch_sizes, epoch_list, lr_gen, lr_disc, im_path, max_size_i, cr
     usually use the "critic", but in this project, we will use them interchangeably.
     """
     # batch_sizes = {4: 128, 8: 128, 16: 64, 32: 16, 64: 16}
-    BATCH_ALL = sorted(list(batch_sizes.keys()))
+    IDX_LIST_TOTAL = [0, 1, 2, 3, 4, 5, 6, 7]
+    idx = max_size_i - 2
+    IDX_LIST = IDX_LIST_TOTAL[:idx]
+
+    BATCH_ALL_KEY = sorted(list(batch_sizes.keys()))[:idx] #First, we get the keys as a list
+    # Just to avoid dictionary which is not in order in Python :>
+    # Then, get its value in order
+    BATCH_ALL = [batch_sizes[key] for key in BATCH_ALL_KEY]
     ds_test = Dataset_transformed(im_path, batch_sizes, max_size_i, crop_size)
 
-    TRAIN_DL_ALL = [ds_test.all_data[i] for i in BATCH_ALL]
+
+
+    TRAIN_DL_ALL = [ds_test.all_data[i] for i in BATCH_ALL_KEY]
+
     # lambda_val = 10
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -45,9 +55,7 @@ def train_step(batch_sizes, epoch_list, lr_gen, lr_disc, im_path, max_size_i, cr
     gen_optim = torch.optim.Adam(gen.parameters(), betas=(0.0,0.999), lr=lr_gen, fused=use_fused)
     disc_optim = torch.optim.Adam(disc.parameters(), betas=(0.0,0.999), lr=lr_disc, fused=use_fused)
 
-    IDX_LIST_TOTAL = [0, 1, 2, 3, 4, 5, 6, 7]
-    idx = max_size_i - 2
-    IDX_LIST = IDX_LIST_TOTAL[:idx]
+
     RESOLUTIONS = {0: 4, 1: 8, 2: 16, 3: 32, 4: 64, 5:128, 6: 256, 7:512}
     EPOCH_LIST = epoch_list#[8, 8, 6, 4, 4, 4, 4, 4]
 
@@ -62,7 +70,7 @@ def train_step(batch_sizes, epoch_list, lr_gen, lr_disc, im_path, max_size_i, cr
     save_logger = logging.getLogger("save_logger")
     save_model_root = create_folder(save_path)
 
-    for i in range(len(IDX_LIST)):  # Train at each resolution
+    for i in IDX_LIST:  # Train at each resolution
         IDX = IDX_LIST[i]
         TOTAL_EPOCH = EPOCH_LIST[i]
         TRAIN_DL = TRAIN_DL_ALL[i]
@@ -70,6 +78,8 @@ def train_step(batch_sizes, epoch_list, lr_gen, lr_disc, im_path, max_size_i, cr
         CURRENT_BATCH_SIZE = BATCH_ALL[i]
 
         for epoch in tqdm(range(TOTAL_EPOCH), desc="Epoch training", position=0, colour="green"):
+            gen_loss_val_total = 0
+            disc_loss_val_total = 0
 
             for batch_val, x_true in enumerate(tqdm(TRAIN_DL, desc="Batch training", leave=True, position=1)):
                 current_step += 1
@@ -85,6 +95,7 @@ def train_step(batch_sizes, epoch_list, lr_gen, lr_disc, im_path, max_size_i, cr
                 disc_optim.zero_grad()
                 with torch.autocast(device_type=device.type, dtype=torch.bfloat16):
                     loss_disc_val = critic_loss_gp(x_fake=fake.detach(), x_true=x_true, critic=disc, idx=IDX, alpha=alpha)
+                disc_loss_val_total += loss_disc_val.item()
                 loss_disc_val.backward()  # create gradient
                 disc_optim.step()  # Update gradients
 
@@ -92,6 +103,7 @@ def train_step(batch_sizes, epoch_list, lr_gen, lr_disc, im_path, max_size_i, cr
                 gen_optim.zero_grad()
                 with torch.autocast(device_type=device.type, dtype=torch.bfloat16):
                     gen_loss_val = gen_loss(x_fake=fake, critic=disc, idx=IDX, alpha=alpha)
+                gen_loss_val_total += gen_loss_val.item()
                 gen_loss_val.backward()  # Calculate the gradient
                 gen_optim.step()  # Update the gradient
                 writer.add_scalars("Loss/train_batch", {
@@ -116,8 +128,8 @@ def train_step(batch_sizes, epoch_list, lr_gen, lr_disc, im_path, max_size_i, cr
 
             if epoch % save_after == 0:
                 save_model(gen, save_model_root, "generator", epoch=epoch, optimizer=gen_optim,
-                           loss=gen_loss_val.item(), log=save_logger)
+                           loss=gen_loss_val_total / len(TRAIN_DL) , log=save_logger)
                 save_model(disc, save_model_root, "discriminator", epoch=epoch, optimizer=disc_optim,
-                           loss=gen_loss_val.item(), log=save_logger)
+                           loss=disc_loss_val_total / len(TRAIN_DL), log=save_logger)
     writer.close()
 
