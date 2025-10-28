@@ -30,4 +30,4 @@ python run_training.py
 ```
 
 On Jupyter notebook:
-[Notebook link](https://colab.research.google.com/drive/1tcK5Kl1uMvl8FHloZ-hZAd7W8nz9saXW?usp=sharing)
+<a href="[https://pytorch.org](https://colab.research.google.com/drive/1tcK5Kl1uMvl8FHloZ-hZAd7W8nz9saXW?usp=sharing)" target="_blank">Notebook link</a>
