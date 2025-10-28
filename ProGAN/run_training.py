@@ -33,10 +33,6 @@ if __name__ == "__main__":
     for re in resolution_list:
         parser.add_argument(f"-e{re}", f"--epoch_{re}", type=int, help=f"epoch size for resolution {re}", default=EPOCH_DICT[re])
 
-    parser.add_argument("-bs", "--batch_sizes", type=ast.literal_eval, help="The custom batch sizes. "
-                                                                "e.g. {4: 128, 8: 128, 16: 64, 32: 16, 64: 16, 128: 16, 256: 16, 512: 16}", default=BATCH_SIZES)
-    # parser.add_argument("-epl", "--epoch_list", type=ast.literal_eval, help="The list, e.g. [8, 8, 6, 4, 4, 4, 4, 4], each elment corresponds to the number of epochs for training at that resolution"
-    #                                                             "we can count starts to count it from 4, 8, 16, 32, 64, 128, 256, 512", default=EPOCH_LIST)
     parser.add_argument("-ip", "--im_path", type=str, help="the path contains the training dataset, example: data/train/, remember to at the last slash", default=IM_PATH)
     parser.add_argument("-msi", "--max_size_i", type=int, help="the i power to get the resolution that we want, e.g., if we want to "
                                                                "generate the resolution 64, then the max_size_i = 6, because 2**6=64", default=MAX_SIZE_I)
@@ -49,8 +45,6 @@ if __name__ == "__main__":
 
 
     config_args = get_argparge_type(parser)
-    batch_sizes = config_args.batch_sizes
-    # epoch_list = config_args.epoch_list
     im_path = config_args.im_path
     max_size_i = config_args.max_size_i
     crop_size = config_args.crop_size
