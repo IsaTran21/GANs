@@ -2,11 +2,11 @@ TRAINING_PARAMS:
   LR_GEN: !!float 1e-3
   LR_DISC: !!float 1e-3
   CHECKPOINT_FOLDER: "checkpoint"
-  BATCH_SIZES: {4: 128, 8: 128, 16: 64, 32: 16, 64: 16, 128: 16, 256: 16, 512: 16}
+  BATCH_SIZES: {4: 64, 8: 32, 16: 32, 32: 16, 64: 8, 128: 8, 256: 8, 512: 8}
   IM_PATH: "data/images/"
   MAX_SIZE_I: 6
   CROP_SIZE: 160
   SAVE_AFTER: 1
-  EPOCH_DICT: {4: 8, 8: 8, 16: 6, 32: 4, 64: 4, 128: 4, 256: 4, 512: 4}
+  EPOCH_DICT: {4: 128, 8: 128, 16: 128, 32: 128, 64: 64, 128: 64, 256: 64, 512: 32}
 
 

@@ -41,6 +41,15 @@ LOGGER_CONFIG = {
                 "maxBytes": 10485760 * 5,  # 50 MB = 10 * 1024 * 1024 * 5
                 "backupCount": 50  # number of rotated log files to keep
             },
+        "data_handler":
+            {
+                "class": "logging.handlers.RotatingFileHandler",
+                "filename": "data_log.json",
+                "formatter": "save_formatter",
+                "mode": "a",  # explicitly append
+                "maxBytes": 10485760 * 5,  # 50 MB = 10 * 1024 * 1024 * 5
+                "backupCount": 50  # number of rotated log files to keep
+            },
 
     },
     'loggers': {
@@ -48,6 +57,11 @@ LOGGER_CONFIG = {
         'save_logger': {
             "level": "INFO",
             "handlers": ["save_handler"],
+            "propagate": False
+        },
+        'data_logger': {
+            "level": "INFO",
+            "handlers": ["data_handler"],
             "propagate": False
         },
     },

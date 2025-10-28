@@ -5,7 +5,9 @@ from PIL import Image
 import os
 from concurrent.futures import ProcessPoolExecutor
 from utils import get_tqdm
-import time
+import logging.config
+from custom_logger import LOGGER_CONFIG
+
 
 tqdm = get_tqdm()
 class CelebDataset(Dataset):
@@ -20,7 +22,8 @@ class CelebDataset(Dataset):
         return len(self.listImg)
 
     def __getitem__(self, idx):
-
+        logging.config.dictConfig(LOGGER_CONFIG)
+        data_logger = logging.getLogger("data_logger")
         idx = idx % len(self.listImg)
         img_path = self.listImg[idx]
         try:
@@ -28,15 +31,16 @@ class CelebDataset(Dataset):
             if self.transform:
                 return self.transform(img)
             else:
-                return transforms.ToTensor(img)
+                return transforms.ToTensor()(img)
         except Exception as e:
-            print(f"Error {e} at loading image")
+            data_logger.info(f"Error {e} at loading image")
             next_idx = (idx + 1) % len(self.listImg)
             return self.__getitem__(next_idx)
 
 def getImgList(path):
-    nameList = glob.glob(f'{path}*.jpg', recursive=True)
-    return nameList
+    # nameList = glob.glob(f'{path}*.jpg', recursive=True)
+    name_list = glob.glob(os.path.join(path, '**', '*.jpg'), recursive=True)
+    return name_list
 
 
 
@@ -82,13 +86,13 @@ class Dataset_transformed:
         8: dataloader object at 8}
         :return:
         """
-        start = time.time()
+        # start = time.time()
         all_sizes = [2**i for i in range(2, self.max_size_i+1)]
         NUM_WORKERS = max(1, os.cpu_count() // 2)
         with ProcessPoolExecutor(max_workers=NUM_WORKERS) as executor:
             results = executor.map(self.get_transform, all_sizes)
             all_data = list(tqdm(results, total=len(all_sizes), desc="Creating dataset", colour="green"))
-        print(f'It takes {time.time() - start} seconds')
+        # print(f'It takes {time.time() - start} seconds')
         # all_sizes are like 4, 8, 16, 32,...
         # Then the self.batch_sizes is a dict of {4: its batch size, 5: its batch size,...}
         # range(self.max_size_i-2) is something like: 0, 1, 2,....the indices of each size

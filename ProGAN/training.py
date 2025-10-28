@@ -11,7 +11,7 @@ from dataset import Dataset_transformed
 from utils import save_model
 import logging.config
 from custom_logger import LOGGER_CONFIG
-
+import os
 def train_step(batch_sizes, epoch_dict, lr_gen, lr_disc, im_path, max_size_i, crop_size, save_path, save_after):
     """
     :param batch_sizes: a dict of batch size for each resolution, example: {4: 128, 8: 128, 16: 64, 32: 16, 64: 16}
@@ -57,13 +57,13 @@ def train_step(batch_sizes, epoch_dict, lr_gen, lr_disc, im_path, max_size_i, cr
     gen.train()
     disc.train()
     log_dir = f"runs/progran_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-    writer = SummaryWriter(log_dir=log_dir)
+    writer = SummaryWriter(log_dir=os.path.join(save_path, log_dir))
     current_step = 0
 
     # Create the models
     logging.config.dictConfig(LOGGER_CONFIG)
     save_logger = logging.getLogger("save_logger")
-    save_model_root = create_folder(save_path)
+    save_model_root = create_folder(os.path.join(save_path, "checkpoint"))
 
     for i in tqdm(IDX_LIST, desc="At resolution training", position=0, colour="green"):  # Train at each resolution
         IDX = IDX_LIST[i]
@@ -72,11 +72,11 @@ def train_step(batch_sizes, epoch_dict, lr_gen, lr_disc, im_path, max_size_i, cr
         TOTAL_BATCH = len(TRAIN_DL)
         CURRENT_BATCH_SIZE = BATCH_ALL[i]
 
-        for epoch in tqdm(range(TOTAL_EPOCH), desc="Epoch training", position=1, colour="blue"):
+        for epoch in tqdm(range(TOTAL_EPOCH), desc="Epoch training", position=1, colour="blue", leave=False):
             gen_loss_val_total = 0
             disc_loss_val_total = 0
 
-            for batch_val, x_true in enumerate(tqdm(TRAIN_DL, desc="Batch training", leave=True, position=2, colour="yellow")):
+            for batch_val, x_true in enumerate(tqdm(TRAIN_DL, desc="Batch training", leave=False, position=2, colour="yellow")):
                 current_step += 1
 
                 x_true = x_true.to(device)
@@ -107,24 +107,32 @@ def train_step(batch_sizes, epoch_dict, lr_gen, lr_disc, im_path, max_size_i, cr
                 }, current_step)
 
                 # Visualization
-                if batch_val % 20 == 0:
-                    print(
-                        f'Resolution = {RESOLUTIONS[i]}, Epoch = {epoch + 1}/{TOTAL_EPOCH}, batch = {batch_val}/{len(TRAIN_DL)} - at resolution: {RESOLUTIONS[IDX]}, disc loss = {loss_disc_val.item():.4f}, gen loss = {gen_loss_val.item():.4f}')
+                if batch_val % 500 == 0 or (batch_val + 1) % len(TRAIN_DL) == 0:
 
-                if batch_val % 100 == 0:
                     gen.eval()
                     with torch.no_grad():
                         fake_img = gen(noise, idx=IDX, alpha=alpha)
-                        visualize_imgs_test(fake_img[10].detach(), x_true[10])
                         writer.add_image("Images/fake_image/", fake_img[10].detach(), current_step)
                         writer.add_image("Images/real_image/", x_true[10], current_step)
                     gen.train()
 
+                if (batch_val == (len(TRAIN_DL)-1) and epoch % 20==0) or (batch_val == (len(TRAIN_DL)-1) and (epoch + 1) % TOTAL_EPOCH == 0):
+                    gen.eval()
+                    tqdm.write(
+                        f'Resolution = {RESOLUTIONS[i]}, Epoch = {epoch + 1}/{TOTAL_EPOCH}, batch = {batch_val}/{len(TRAIN_DL)} - at resolution: {RESOLUTIONS[IDX]}, disc loss = {loss_disc_val.item():.4f}, gen loss = {gen_loss_val.item():.4f}')
+                    with torch.no_grad():
+                        fake_img = gen(noise, idx=IDX, alpha=alpha)
+                        visualize_imgs_test(fake_img[10].detach(), x_true[10])
 
-            if epoch % save_after == 0:
-                save_model(gen, save_model_root, "generator", epoch=epoch, optimizer=gen_optim,
+                    gen.train()
+
+            if epoch % save_after == 0 or (epoch+1) == TOTAL_EPOCH:
+                # Save each save_after epoch or the end of the epoch
+                save_model(gen, save_model_root, f"generator_resolution_{RESOLUTIONS[i]}", epoch=epoch, optimizer=gen_optim,
                            loss=gen_loss_val_total / len(TRAIN_DL) , log=save_logger)
-                save_model(disc, save_model_root, "discriminator", epoch=epoch, optimizer=disc_optim,
+                save_model(disc, save_model_root, f"discriminator_resolution_{RESOLUTIONS[i]}", epoch=epoch, optimizer=disc_optim,
                            loss=disc_loss_val_total / len(TRAIN_DL), log=save_logger)
+
+
     writer.close()
 
