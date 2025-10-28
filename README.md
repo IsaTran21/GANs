@@ -1,0 +1,26 @@
+# Generative Adversarial Networks (GANs) with PyTorch
+
+A PyTorch-based implementation of popular **Generative Adversarial Networks (GANs)** including:
+- **ProGAN** (Progressive Growing of GANs)
+- **CycleGAN** (Image-to-Image Translation)
+
+## Overview
+
+This repository provides clean and modular implementations of **GAN architectures** from scratch using **PyTorch**.  
+It aims to serve as both a **learning resource** and a **baseline framework** for researchers and developers exploring generative models.
+
+Each GAN is trained from scratch and supports:
+- Configurable architectures
+- Custom datasets
+- Checkpoint saving & resuming
+- GPU on Google colab (if there are multiple GPU, can tailor it to distributed training).
+- Logging to show details about data processing issue if any and the save models details
+- Using tensorboard to show the images at each resolution.
+
+## Installation
+
+Clone the repository and install dependencies:
+
+```bash
+
+```
