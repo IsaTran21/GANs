@@ -1,5 +1,5 @@
 import torch
-from gen import Generator
+from generator import Generator
 from discriminator import Discriminator
 from loss import critic_loss_gp, gen_loss
 from utils import visualize_imgs_test, get_alpha, get_tqdm, create_folder
@@ -30,7 +30,7 @@ def train_step(batch_sizes, epoch_dict, lr_gen, lr_disc, im_path, max_size_i, cr
     # batch_sizes = {4: 128, 8: 128, 16: 64, 32: 16, 64: 16}
     IDX_LIST_TOTAL = [0, 1, 2, 3, 4, 5, 6, 7]
     idx = max_size_i - 1
-    IDX_LIST = IDX_LIST_TOTAL[:idx]
+    IDX_LIST = IDX_LIST_TOTAL[4:idx]
 
     BATCH_ALL_KEY = sorted(list(batch_sizes.keys()))[:idx] #First, we get the keys as a list
     # Just to avoid dictionary which is not in order in Python :>
@@ -112,8 +112,8 @@ def train_step(batch_sizes, epoch_dict, lr_gen, lr_disc, im_path, max_size_i, cr
                     gen.eval()
                     with torch.no_grad():
                         fake_img = gen(noise, idx=IDX, alpha=alpha)
-                        writer.add_image("Images/fake_image/", fake_img[10].detach(), current_step)
-                        writer.add_image("Images/real_image/", x_true[10], current_step)
+                        writer.add_image("Images/fake_image/", fake_img[1].detach(), current_step)
+                        writer.add_image("Images/real_image/", x_true[1], current_step)
                     gen.train()
 
                 if (batch_val == (len(TRAIN_DL)-1) and epoch % 20==0) or (batch_val == (len(TRAIN_DL)-1) and (epoch + 1) % TOTAL_EPOCH == 0):
@@ -122,7 +122,7 @@ def train_step(batch_sizes, epoch_dict, lr_gen, lr_disc, im_path, max_size_i, cr
                         f'Resolution = {RESOLUTIONS[i]}, Epoch = {epoch + 1}/{TOTAL_EPOCH}, batch = {batch_val}/{len(TRAIN_DL)} - at resolution: {RESOLUTIONS[IDX]}, disc loss = {loss_disc_val.item():.4f}, gen loss = {gen_loss_val.item():.4f}')
                     with torch.no_grad():
                         fake_img = gen(noise, idx=IDX, alpha=alpha)
-                        visualize_imgs_test(fake_img[10].detach(), x_true[10])
+                        visualize_imgs_test(fake_img[1].detach(), x_true[1])
 
                     gen.train()
 
