@@ -22,5 +22,8 @@ Each GAN is trained from scratch and supports:
 Clone the repository and install dependencies:
 
 ```bash
-
+!git clone git@github.com:IsaTran21/GANs.git
+pip install -r requirements.txt
+cd ProGAN
+python run_training.py
 ```
