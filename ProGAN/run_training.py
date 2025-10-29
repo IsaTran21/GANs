@@ -62,6 +62,9 @@ if __name__ == "__main__":
     save_after = config_args.save_after
     lr_gen = config_args.lr_gen
     lr_disc = config_args.lr_disc
+    pickup = config_args.pickup
+    gen_path = config_args.gen_path
+    disc_path = config_args.disc_path
     updated_batch_sizes = {i: getattr(config_args, f"batch_{i}") for i in resolution_list}
     updated_epoch_sizes = {i: getattr(config_args, f"epoch_{i}") for i in resolution_list}
 
@@ -74,6 +77,6 @@ if __name__ == "__main__":
                crop_size=crop_size,
                save_path=save_path,
                save_after=save_after,
-               pickup=PICKUP,
-               gen_path=GEN_PATH,
-               disc_path=DISC_PATH)
+               pickup=pickup,
+               gen_path=gen_path,
+               disc_path=disc_path)
