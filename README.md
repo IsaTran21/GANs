@@ -18,7 +18,7 @@ Each GAN is trained from scratch and supports:
 - Using tensorboard to show the images at each resolution.
 
 ## Installation
-
+### For the ProGAN
 Clone the repository and install dependencies, on Window:
 
 ```bash
