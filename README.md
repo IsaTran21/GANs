@@ -13,7 +13,7 @@ Each GAN is trained from scratch and supports:
 - Configurable architectures
 - Custom datasets
 - Checkpoint saving & resuming
-- GPU on Google colab (if there are multiple GPU, can tailor it to distributed training).
+- GPU on Google colab (if there are multiple GPUs, can tailor it to distributed training).
 - Logging to show details about data processing issue if any and the save models details
 - Using tensorboard to show the images at each resolution.
 
