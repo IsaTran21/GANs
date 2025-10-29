@@ -19,8 +19,15 @@ Each GAN is trained from scratch and supports:
 
 ## Installation
 
-Clone the repository and install dependencies:
+Clone the repository and install dependencies, on Window:
 
 ```bash
-
+git init
+git clone git@github.com:IsaTran21/GANs.git
+pip install -r GANs\requirements.txt
+cd GANs\ProGAN
+python run_training.py
 ```
+
+On Jupyter notebook:
+[Notebook link](https://colab.research.google.com/drive/1tcK5Kl1uMvl8FHloZ-hZAd7W8nz9saXW?usp=sharing)
