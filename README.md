@@ -30,4 +30,4 @@ python run_training.py
 ```
 
 On Jupyter notebook:
-[Notebook link](https://colab.research.google.com/drive/1tcK5Kl1uMvl8FHloZ-hZAd7W8nz9saXW?usp=sharing)
+[Notebook link](https://drive.google.com/file/d/1QcG-iM7oX0hJoZsgg1mxQIG16YaB4hg7/view?usp=sharing)
