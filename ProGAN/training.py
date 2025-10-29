@@ -79,7 +79,7 @@ def train_step(batch_sizes, epoch_dict, lr_gen, lr_disc, im_path, max_size_i, cr
     save_model_root = create_folder(os.path.join(save_path, "checkpoint"))
 
     for i in tqdm(IDX_LIST, desc="At resolution training", position=0, colour="green"):  # Train at each resolution
-        IDX = IDX_LIST[i]
+        # i = IDX #
         TOTAL_EPOCH = EPOCH_DICT[RESOLUTIONS[i]]
         TRAIN_DL = TRAIN_DL_ALL[RESOLUTIONS[i]]
         TOTAL_BATCH = len(TRAIN_DL)
@@ -96,13 +96,13 @@ def train_step(batch_sizes, epoch_dict, lr_gen, lr_disc, im_path, max_size_i, cr
                 alpha = get_alpha(epoch_val=epoch, batch_val=batch_val, total_epoch=TOTAL_EPOCH, total_batch=TOTAL_BATCH)
 
                 noise = torch.randn((CURRENT_BATCH_SIZE, 512,)).to(device)
-                fake = gen(noise, idx=IDX, alpha=alpha).to(device)
+                fake = gen(noise, idx=i, alpha=alpha).to(device)
                 # print(f'Fake shape: {fake.shape}')
 
                 # Train the discriminator
                 disc_optim.zero_grad()
                 with torch.autocast(device_type=device.type, dtype=torch.bfloat16):
-                    loss_disc_val = critic_loss_gp(x_fake=fake.detach(), x_true=x_true, critic=disc, idx=IDX, alpha=alpha)
+                    loss_disc_val = critic_loss_gp(x_fake=fake.detach(), x_true=x_true, critic=disc, idx=i, alpha=alpha)
                 disc_loss_val_total += loss_disc_val.item()
                 loss_disc_val.backward()  # create gradient
                 disc_optim.step()  # Update gradients
@@ -110,7 +110,7 @@ def train_step(batch_sizes, epoch_dict, lr_gen, lr_disc, im_path, max_size_i, cr
                 # Train the generator
                 gen_optim.zero_grad()
                 with torch.autocast(device_type=device.type, dtype=torch.bfloat16):
-                    gen_loss_val = gen_loss(x_fake=fake, critic=disc, idx=IDX, alpha=alpha)
+                    gen_loss_val = gen_loss(x_fake=fake, critic=disc, idx=i, alpha=alpha)
                 gen_loss_val_total += gen_loss_val.item()
                 gen_loss_val.backward()  # Calculate the gradient
                 gen_optim.step()  # Update the gradient
@@ -124,7 +124,7 @@ def train_step(batch_sizes, epoch_dict, lr_gen, lr_disc, im_path, max_size_i, cr
 
                     gen.eval()
                     with torch.no_grad():
-                        fake_img = gen(noise, idx=IDX, alpha=alpha)
+                        fake_img = gen(noise, idx=i, alpha=alpha)
                         writer.add_image("Images/fake_image/", fake_img[1].detach(), current_step)
                         writer.add_image("Images/real_image/", x_true[1], current_step)
                     gen.train()
@@ -132,9 +132,9 @@ def train_step(batch_sizes, epoch_dict, lr_gen, lr_disc, im_path, max_size_i, cr
                 if (batch_val == (len(TRAIN_DL)-1) and epoch % 20==0) or (batch_val == (len(TRAIN_DL)-1) and (epoch + 1) % TOTAL_EPOCH == 0):
                     gen.eval()
                     tqdm.write(
-                        f'Resolution = {RESOLUTIONS[i]}, Epoch = {epoch + 1}/{TOTAL_EPOCH}, batch = {batch_val}/{len(TRAIN_DL)} - at resolution: {RESOLUTIONS[IDX]}, disc loss = {loss_disc_val.item():.4f}, gen loss = {gen_loss_val.item():.4f}')
+                        f'Resolution = {RESOLUTIONS[i]}, Epoch = {epoch + 1}/{TOTAL_EPOCH}, batch = {batch_val}/{len(TRAIN_DL)} - at resolution: {RESOLUTIONS[i]}, disc loss = {loss_disc_val.item():.4f}, gen loss = {gen_loss_val.item():.4f}')
                     with torch.no_grad():
-                        fake_img = gen(noise, idx=IDX, alpha=alpha)
+                        fake_img = gen(noise, idx=i, alpha=alpha)
                         visualize_imgs_test(fake_img[1].detach(), x_true[1])
 
                     gen.train()
