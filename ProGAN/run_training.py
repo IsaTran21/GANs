@@ -7,7 +7,10 @@ from config import (
     MAX_SIZE_I,
     CROP_SIZE,
     SAVE_AFTER,
-    EPOCH_DICT)
+    EPOCH_DICT,
+    PICKUP,
+    GEN_PATH,
+    DISC_PATH)
 from utils import get_argparge_type
 from training import train_step
 
@@ -19,6 +22,10 @@ def int_or_none(value):
     if value.lower() == "none":
         return None
     return int(value)
+def int_or_str(value):
+    if value.lower() == "none":
+        return None
+    return str(value)
 if __name__ == "__main__":
 
 
@@ -41,6 +48,9 @@ if __name__ == "__main__":
     parser.add_argument("-sa", "--save_after", type=int, help="The number of epoch to save the models.", default=SAVE_AFTER)
     parser.add_argument("-lg", "--lr_gen", type=float, help="Learning rate for the generator", default=LR_GEN)
     parser.add_argument("-ld", "--lr_disc", type=float, help="Learning rate for the discriminator/critic", default=LR_DISC)
+    parser.add_argument("-pu", "--pickup", type=int_or_none, help="pickup training", default=PICKUP)
+    parser.add_argument("-gp", "--gen_path", type=int_or_str, help="saved generator .pth model", default=GEN_PATH)
+    parser.add_argument("-dp", "--disc_path", type=int_or_str, help="saved discriminator/critic .pth model", default=DISC_PATH)
 
 
 
@@ -63,4 +73,7 @@ if __name__ == "__main__":
                max_size_i=max_size_i,
                crop_size=crop_size,
                save_path=save_path,
-               save_after=save_after)
+               save_after=save_after,
+               pickup=PICKUP,
+               gen_path=GEN_PATH,
+               disc_path=DISC_PATH)

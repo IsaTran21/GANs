@@ -254,3 +254,28 @@ def create_folder(create_folder):
     folder = Path.cwd() / create_folder
     folder.mkdir(parents=True, exist_ok=True)
     return folder
+def pickup_training(gen_path, disc_path):
+    """
+    When we stop the training and return to it later at a specific resolution
+    :param gen_path: where we save the .pth gen model state_dict
+    :param disc_path: where we save the .pth disc model state_dict
+    """
+    from generator import Generator
+
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+    gen = Generator(512).to(device)
+
+    gen_path = gen_path
+    state_dict_gen = torch.load(gen_path, map_location=device)
+    gen.load_state_dict(state_dict_gen["model_state_dict"])
+    ###########################################################
+    ###########################################################
+    from discriminator import Discriminator
+
+    disc_path = disc_path
+    disc = Discriminator().to(device)
+    state_dict_disc = torch.load(disc_path, map_location=device)
+    disc.load_state_dict(state_dict_disc["model_state_dict"])
+
+    return gen, disc, device

@@ -8,11 +8,11 @@ from torch.utils.tensorboard import SummaryWriter
 import inspect # For fusing kernels
 from datetime import datetime
 from dataset import Dataset_transformed
-from utils import save_model
+from utils import save_model, pickup_training
 import logging.config
 from custom_logger import LOGGER_CONFIG
 import os
-def train_step(batch_sizes, epoch_dict, lr_gen, lr_disc, im_path, max_size_i, crop_size, save_path, save_after):
+def train_step(batch_sizes, epoch_dict, lr_gen, lr_disc, im_path, max_size_i, crop_size, save_path, save_after, pickup, gen_path, disc_path):
     """
     :param batch_sizes: a dict of batch size for each resolution, example: {4: 128, 8: 128, 16: 64, 32: 16, 64: 16}
     :param epoch_list: the list of epoch for training at each resolution. e.g., [8, 8, 6, 4, 4, 4, 4, 4]
@@ -23,6 +23,7 @@ def train_step(batch_sizes, epoch_dict, lr_gen, lr_disc, im_path, max_size_i, cr
     :param max_size_i: the power of 2, such as: 2, 3, 4, 5, 6, 7, 8, 9, 10.
     In this project, only use max_size_i = 6 (resolution=64)
     :param crop_size: the crop size in the transformation of the images in the training set
+    :param pickup: None or a specific resolution, such as 4, 8, 16, 32,...256
     :we don't return anything, the model will be saved to disk after each save_period, the default is 1
     which means that we will save after each epoch the generator and discriminator (although in this wgan loss, we
     usually use the "critic", but in this project, we will use them interchangeably.
@@ -30,7 +31,7 @@ def train_step(batch_sizes, epoch_dict, lr_gen, lr_disc, im_path, max_size_i, cr
     # batch_sizes = {4: 128, 8: 128, 16: 64, 32: 16, 64: 16}
     IDX_LIST_TOTAL = [0, 1, 2, 3, 4, 5, 6, 7]
     idx = max_size_i - 1
-    IDX_LIST = IDX_LIST_TOTAL[4:idx]
+    IDX_LIST = IDX_LIST_TOTAL[:idx]
 
     BATCH_ALL_KEY = sorted(list(batch_sizes.keys()))[:idx] #First, we get the keys as a list
     # Just to avoid dictionary which is not in order in Python :>
@@ -39,11 +40,23 @@ def train_step(batch_sizes, epoch_dict, lr_gen, lr_disc, im_path, max_size_i, cr
     ds_test = Dataset_transformed(im_path, batch_sizes, max_size_i, crop_size)
     TRAIN_DL_ALL = {i: ds_test.all_data[i] for i in BATCH_ALL_KEY}
     # lambda_val = 10
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    gen, disc, device = None, None, None
+    if pickup is None:
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    # Create the generator and discriminator
-    gen = Generator(512).to(device)
-    disc = Discriminator().to(device)
+        # Create the generator and discriminator
+        gen = Generator(512).to(device)
+        disc = Discriminator().to(device)
+    if pickup is not None:
+        resolution_dict = {2**(IDX_LIST_TOTAL[i]+2):i for i in IDX_LIST_TOTAL}
+        assert gen_path is not None and disc_path is not None, "If you want to pick up training, must provide the saved .pth models for the generator and discriminator"
+        assert pickup in sorted(list(resolution_dict.keys())), "Pass valid resolution, e.g. 4, 8, 16,...256"
+        gen, disc, device = pickup_training(gen_path, disc_path)
+        current_resolution = resolution_dict.get(pickup)
+        # If we stop training at the end of resolution say, 32, then, current_resolution=4
+        # pickup now mean: load the pretrained model at resolution 32, and then started to train
+        # the 64 resolution onwards to the target resolution at idx
+        IDX_LIST = IDX_LIST_TOTAL[current_resolution:idx]
 
     # The optimization for the generator and discriminator
     fused_available = 'fused' in inspect.signature(torch.optim.AdamW).parameters
