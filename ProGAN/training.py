@@ -12,7 +12,7 @@ from utils import save_model, pickup_training
 import logging.config
 from custom_logger import LOGGER_CONFIG
 import os
-def train_step(batch_sizes, epoch_dict, lr_gen, lr_disc, im_path, max_size_i, crop_size, save_path, save_after, pickup, gen_path, disc_path):
+def train_step(batch_sizes, epoch_dict, lr_gen, lr_disc, im_path, max_size_i, crop_size, save_path, save_after, pickup, pickup_epoch, gen_path, disc_path):
     """
     :param batch_sizes: a dict of batch size for each resolution, example: {4: 128, 8: 128, 16: 64, 32: 16, 64: 16}
     :param epoch_list: the list of epoch for training at each resolution. e.g., [8, 8, 6, 4, 4, 4, 4, 4]
@@ -49,6 +49,7 @@ def train_step(batch_sizes, epoch_dict, lr_gen, lr_disc, im_path, max_size_i, cr
         disc = Discriminator().to(device)
     if pickup is not None:
         resolution_dict = {2**(IDX_LIST_TOTAL[i]+2):i for i in IDX_LIST_TOTAL}
+
         assert gen_path is not None and disc_path is not None, "If you want to pick up training, must provide the saved .pth models for the generator and discriminator"
         assert pickup in sorted(list(resolution_dict.keys())), "Pass valid resolution, e.g. 4, 8, 16,...256"
         gen, disc, device = pickup_training(gen_path, disc_path)
@@ -56,7 +57,13 @@ def train_step(batch_sizes, epoch_dict, lr_gen, lr_disc, im_path, max_size_i, cr
         # If we stop training at the end of resolution say, 32, then, current_resolution=4
         # pickup now mean: load the pretrained model at resolution 32, and then started to train
         # the 64 resolution onwards to the target resolution at idx
+        tqdm.write(f"Start training at {pickup}")
         IDX_LIST = IDX_LIST_TOTAL[current_resolution:idx]
+
+        # After pickup training, we just continue on using it, no need to pickup for the next epoch
+        pickup = None
+
+
 
     # The optimization for the generator and discriminator
     fused_available = 'fused' in inspect.signature(torch.optim.AdamW).parameters
@@ -84,8 +91,9 @@ def train_step(batch_sizes, epoch_dict, lr_gen, lr_disc, im_path, max_size_i, cr
         TRAIN_DL = TRAIN_DL_ALL[RESOLUTIONS[i]]
         TOTAL_BATCH = len(TRAIN_DL)
         CURRENT_BATCH_SIZE = BATCH_ALL[i]
-
-        for epoch in tqdm(range(TOTAL_EPOCH), desc="Epoch training", position=1, colour="blue", leave=False):
+        LEFT_EPOCHS = range(pickup_epoch, TOTAL_EPOCH)
+        pickup_epoch = 0 # start from 0 for the next epoch
+        for epoch in tqdm(LEFT_EPOCHS, desc="Epoch training", position=1, colour="blue", leave=False):
             gen_loss_val_total = 0
             disc_loss_val_total = 0
 

@@ -9,6 +9,7 @@ from config import (
     SAVE_AFTER,
     EPOCH_DICT,
     PICKUP,
+    PICKUP_EPOCH,
     GEN_PATH,
     DISC_PATH)
 from utils import get_argparge_type
@@ -51,6 +52,7 @@ if __name__ == "__main__":
     parser.add_argument("-pu", "--pickup", type=int_or_none, help="pickup training", default=PICKUP)
     parser.add_argument("-gp", "--gen_path", type=int_or_str, help="saved generator .pth model", default=GEN_PATH)
     parser.add_argument("-dp", "--disc_path", type=int_or_str, help="saved discriminator/critic .pth model", default=DISC_PATH)
+    parser.add_argument("-pue", "--pickup_epoch", type=int, help="pickup epoch for training, if starts training, then it is 0", default=PICKUP_EPOCH)
 
 
 
@@ -63,6 +65,7 @@ if __name__ == "__main__":
     lr_gen = config_args.lr_gen
     lr_disc = config_args.lr_disc
     pickup = config_args.pickup
+    pickup_epoch = config_args.pickup_epoch
     gen_path = config_args.gen_path
     disc_path = config_args.disc_path
     updated_batch_sizes = {i: getattr(config_args, f"batch_{i}") for i in resolution_list}
@@ -78,5 +81,6 @@ if __name__ == "__main__":
                save_path=save_path,
                save_after=save_after,
                pickup=pickup,
+               pickup_epoch=pickup_epoch,
                gen_path=gen_path,
                disc_path=disc_path)
