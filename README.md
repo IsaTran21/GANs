@@ -13,12 +13,12 @@ Each GAN is trained from scratch and supports:
 - Configurable architectures
 - Custom datasets
 - Checkpoint saving & resuming
-- GPU on Google colab (if there are multiple GPU, can tailor it to distributed training).
+- GPU on Google colab (if there are multiple GPUs, can tailor it to distributed training).
 - Logging to show details about data processing issue if any and the save models details
 - Using tensorboard to show the images at each resolution.
 
 ## Installation
-
+### For the ProGAN
 Clone the repository and install dependencies, on Window:
 
 ```bash
@@ -30,4 +30,4 @@ python run_training.py
 ```
 
 On Jupyter notebook:
-[Notebook link](https://drive.google.com/file/d/1QcG-iM7oX0hJoZsgg1mxQIG16YaB4hg7/view?usp=sharing)
+[Notebook link](https://drive.google.com/file/d/1j84OzBna1KrpKC1r7BDPqOfAFWXIukd0/view?usp=sharing)
