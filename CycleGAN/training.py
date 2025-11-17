@@ -5,8 +5,7 @@ from discriminator import Discriminator
 
 from dataset import get_dataloader
 from loss import total_gen_loss, total_disc_loss
-from utils import select_img, create_folder, save_model
-from utils import get_tqdm
+from utils import select_img, create_folder, save_model, visualize_imgs, get_tqdm
 from torch.utils.tensorboard import SummaryWriter
 from datetime import datetime
 import logging.config
