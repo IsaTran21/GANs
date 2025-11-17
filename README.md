@@ -31,4 +31,5 @@ python run_training.py
 
 On Jupyter notebook:
 [ProGAN Notebook link](https://colab.research.google.com/drive/1szzVWp2bxDuXb1orV5G6SVrWgFUJj1Ws?usp=sharing)
+
 [CycleGAN Notebook link](https://colab.research.google.com/drive/1EPRoki3-2pAflTeGdFlqg6q5ImnzLMX0?usp=sharing)
