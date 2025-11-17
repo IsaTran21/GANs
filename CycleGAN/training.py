@@ -45,7 +45,7 @@ def training_step(batch_size, epochs, realA_path, realB_path, use_transformA, us
         epoch_loss_gen = 0
 
         # for batch_idx, (imA, imB) in enumerate(train_loader):
-        for batch_idx, (imA, imB) in enumerate(tqdm(train_loader, desc="Batch training", leave=True, position=1)):
+        for batch_idx, (imA, imB) in enumerate(tqdm(train_loader, desc="Batch training", leave=False, position=1)):
             imA = imA.to(device)
             imB = imB.to(device)
             current_step += imB.shape[0]
@@ -110,7 +110,6 @@ def training_step(batch_size, epochs, realA_path, realB_path, use_transformA, us
 
             # Create the folder in the current working directory for saving the
             save_model_root = create_folder(save_path)
-            break
 
             # if batch_idx % 50 == 0:
             #     with torch.no_grad():
