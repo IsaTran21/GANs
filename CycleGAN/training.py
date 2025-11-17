@@ -111,9 +111,9 @@ def training_step(batch_size, epochs, realA_path, realB_path, use_transformA, us
             # Create the folder in the current working directory for saving the
             save_model_root = create_folder(save_path)
 
-            # if batch_idx % 50 == 0:
-            #     with torch.no_grad():
-            #         visualize_imgs(imA.squeeze(0), imB.squeeze(0), genA=fakeA_x.squeeze(0), genB=fakeB_x.squeeze(0), resize=None, figsize=(15,20))
+            if batch_idx % (len(train_loader)-1) == 0:
+                with torch.no_grad():
+                    visualize_imgs(imA.squeeze(0), imB.squeeze(0), genA=fakeA_x.squeeze(0), genB=fakeB_x.squeeze(0), resize=None, figsize=(15,20))
 
         tqdm.write(
             f"Epoch={epoch}, "
